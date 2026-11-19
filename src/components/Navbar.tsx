@@ -10,7 +10,7 @@ export default function Navbar() {
     <header className="border-b border-zinc-800">
       <nav className="mx-auto flex max-w-5xl items-center justify-between p-4">
         <Link href="/" className="text-xl font-bold text-emerald-400">
-          UnixHub
+          DistroHub
         </Link>
 
         <div className="flex items-center gap-4 text-sm">

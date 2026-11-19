@@ -9,7 +9,7 @@ export default async function Home() {
   return (
     <main className="mx-auto max-w-5xl p-6">
       <section className="py-12 text-center">
-        <h1 className="text-4xl font-bold">UnixHub</h1>
+        <h1 className="text-4xl font-bold">DnixHub</h1>
         <p className="mt-2 text-zinc-400">
           Distros Linux separadas por foco, com scripts de setup prontos.
         </p>
