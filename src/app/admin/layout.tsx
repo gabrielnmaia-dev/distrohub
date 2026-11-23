@@ -1,5 +1,10 @@
 import { requireAdminPage } from "@/lib/session";
 
+// A sessão é lida via cookie: a rota pode bloquear (não há shell estático
+// útil para um painel autenticado). Sem isso, o `next build` falha ao
+// tentar pré-renderizar /admin.
+export const instant = false;
+
 export default async function AdminLayout({
   children,
 }: {

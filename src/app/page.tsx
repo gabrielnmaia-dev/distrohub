@@ -3,6 +3,9 @@ import DistroCard from "@/components/DistroCard";
 import { getDistros } from "@/lib/distros";
 import { FOCOS } from "@/types";
 
+// O catálogo vem do MongoDB em tempo de request; a rota pode bloquear.
+export const instant = false;
+
 export default async function Home() {
   const distros = await getDistros();
 
@@ -13,6 +16,20 @@ export default async function Home() {
         <p className="mt-2 text-zinc-400">
           Distros Linux separadas por foco, com scripts de setup prontos.
         </p>
+        <div className="mt-6 flex flex-wrap justify-center gap-3">
+          <Link
+            href="/quiz"
+            className="rounded-md bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-zinc-950 hover:bg-emerald-500"
+          >
+            Descobrir minha distro
+          </Link>
+          <Link
+            href="/configurador"
+            className="rounded-md border border-zinc-700 px-5 py-2.5 text-sm font-medium hover:border-emerald-500 hover:text-emerald-400"
+          >
+            Montar meu pack
+          </Link>
+        </div>
       </section>
 
       <section className="mb-10 flex flex-wrap justify-center gap-2">

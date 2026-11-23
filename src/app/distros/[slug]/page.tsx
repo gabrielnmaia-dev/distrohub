@@ -4,6 +4,9 @@ import { getDistroBySlug } from "@/lib/distros";
 
 type Props = { params: Promise<{ slug: string }> };
 
+// `params` + MongoDB só existem em tempo de request.
+export const instant = false;
+
 export default async function DistroPage({ params }: Props) {
   const { slug } = await params;
   const distro = await getDistroBySlug(slug);

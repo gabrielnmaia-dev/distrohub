@@ -5,6 +5,9 @@ import { FOCOS } from "@/types";
 
 type Props = { searchParams: Promise<{ foco?: string }> };
 
+// `searchParams` + MongoDB só existem em tempo de request.
+export const instant = false;
+
 export default async function DistrosPage({ searchParams }: Props) {
   const { foco } = await searchParams;
   const distros = await getDistros(foco);
