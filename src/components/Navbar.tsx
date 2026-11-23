@@ -17,6 +17,12 @@ export default function Navbar() {
           <Link href="/distros" className="hover:text-emerald-400">
             Distros
           </Link>
+          <Link href="/quiz" className="hover:text-emerald-400">
+            Quiz
+          </Link>
+          <Link href="/configurador" className="hover:text-emerald-400">
+            Configurador
+          </Link>
 
           {session?.user.role === "admin" && (
             <Link href="/admin" className="hover:text-emerald-400">
