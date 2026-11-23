@@ -4,7 +4,7 @@ import Providers from "@/components/Providers";
 import Navbar from "@/components/Navbar";
 
 export const metadata: Metadata = {
-  title: "UnixHub",
+  title: "DistroHub",
   description: "Distros Linux por foco, com scripts de setup prontos.",
 };
 
