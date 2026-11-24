@@ -1,9 +1,11 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import CodePreview from "@/components/configurador/CodePreview";
 import { compileScript, SCRIPT_FILENAME, summarizeSelection } from "@/lib/script-compiler";
+import { useDistroHubStore } from "@/store/useDistroHubStore";
 import {
   FAMILY_LABELS,
   METHOD_LABELS,
@@ -21,6 +23,7 @@ interface PackConfiguratorProps {
   packages: SoftwarePackage[];
   initialDistroSlug: string;
   initialPack: Pack;
+  hasExplicitParams?: boolean;
 }
 
 type ShareState =
@@ -58,17 +61,47 @@ export default function PackConfigurator({
   packages,
   initialDistroSlug,
   initialPack,
+  hasExplicitParams = false,
 }: PackConfiguratorProps) {
-  const [distroSlug, setDistroSlug] = useState(
-    initialDistroSlug || distros[0]?.slug || ""
+  const storedDistroSlug = useDistroHubStore((s) => s.distroSlug);
+  const storedPack = useDistroHubStore((s) => s.activePack);
+  const storedPackages = useDistroHubStore((s) => s.selectedPackages);
+  const recentPresets = useDistroHubStore((s) => s.recentPresets);
+  const setConfiguratorDraft = useDistroHubStore(
+    (s) => s.setConfiguratorDraft
   );
-  const [pack, setPack] = useState<Pack>(initialPack);
+  const addRecentPreset = useDistroHubStore((s) => s.addRecentPreset);
+  const clearHistory = useDistroHubStore((s) => s.clearHistory);
+
+  const [distroSlug, setDistroSlug] = useState(() => {
+    if (
+      !hasExplicitParams &&
+      storedDistroSlug &&
+      distros.some((item) => item.slug === storedDistroSlug)
+    ) {
+      return storedDistroSlug;
+    }
+    return initialDistroSlug || distros[0]?.slug || "";
+  });
+  const [pack, setPack] = useState<Pack>(() =>
+    !hasExplicitParams && storedPack ? storedPack : initialPack
+  );
   const [selected, setSelected] = useState<string[]>(() =>
-    defaultsFor(packages, initialPack)
+    !hasExplicitParams && storedPackages.length > 0
+      ? storedPackages
+      : defaultsFor(packages, initialPack)
   );
   const [query, setQuery] = useState("");
   const [share, setShare] = useState<ShareState>({ status: "idle" });
   const [copied, setCopied] = useState<string | null>(null);
+
+  useEffect(() => {
+    setConfiguratorDraft({
+      distroSlug,
+      activePack: pack,
+      selectedPackages: selected,
+    });
+  }, [distroSlug, pack, selected, setConfiguratorDraft]);
 
   const distro =
     distros.find((item) => item.slug === distroSlug) ?? distros[0] ?? null;
@@ -251,6 +284,14 @@ export default function PackConfigurator({
       }
 
       setShare({ status: "ready", response: data });
+      if (distro) {
+        addRecentPreset({
+          ...data,
+          distroSlug: distro.slug,
+          packageCount: selectedPackages.length,
+          createdAt: new Date().toISOString(),
+        });
+      }
     } catch {
       setShare({
         status: "error",
@@ -269,18 +310,31 @@ export default function PackConfigurator({
           >
             Distro de destino
           </label>
-          <select
-            id="distro-select"
-            value={distro.slug}
-            onChange={(event) => handleDistroChange(event.target.value)}
-            className="mt-2 w-full rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 outline-none focus:border-emerald-500"
-          >
-            {distros.map((item) => (
-              <option key={item.slug} value={item.slug}>
-                {item.name}
-              </option>
-            ))}
-          </select>
+          <div className="mt-2 flex items-center gap-3">
+            {distro.iconUrl ? (
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-950 p-1.5">
+                <Image
+                  src={distro.iconUrl}
+                  alt={`Ícone 3D do ${distro.name}`}
+                  width={32}
+                  height={32}
+                  className="h-7 w-7 object-contain"
+                />
+              </div>
+            ) : null}
+            <select
+              id="distro-select"
+              value={distro.slug}
+              onChange={(event) => handleDistroChange(event.target.value)}
+              className="w-full rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 outline-none focus:border-emerald-500"
+            >
+              {distros.map((item) => (
+                <option key={item.slug} value={item.slug}>
+                  {item.name}
+                </option>
+              ))}
+            </select>
+          </div>
           <div className="mt-2 flex items-center justify-between gap-2 text-xs text-zinc-400">
             <span className="rounded-full bg-zinc-800 px-2 py-0.5 text-emerald-400">
               {FAMILY_LABELS[distro.family]}
@@ -498,6 +552,61 @@ export default function PackConfigurator({
             <code className="text-zinc-400">curl | bash</code> guarda apenas a
             distro e os slugs dos pacotes — nada é executado no servidor.
           </p>
+
+          {recentPresets.length > 0 && (
+            <div className="space-y-2 rounded-lg border border-zinc-800 bg-zinc-900/40 p-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+                  Links gerados recentemente
+                </h3>
+                <button
+                  type="button"
+                  onClick={clearHistory}
+                  className="text-[11px] text-zinc-500 hover:text-red-400"
+                >
+                  Limpar histórico
+                </button>
+              </div>
+              <ul className="space-y-2">
+                {recentPresets.slice(0, 5).map((item) => (
+                  <li
+                    key={item.shortId}
+                    className="flex items-center justify-between gap-2 rounded border border-zinc-800/80 bg-zinc-950/60 px-2.5 py-1.5 text-xs"
+                  >
+                    <div className="min-w-0 truncate">
+                      <span className="font-mono text-emerald-400">
+                        {item.shortId}
+                      </span>{" "}
+                      <span className="text-zinc-400">
+                        · {item.distroSlug} ({item.packageCount} pkg)
+                      </span>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          copyText(item.curlCommand, `recent-${item.shortId}`)
+                        }
+                        className="rounded border border-zinc-700 px-2 py-0.5 text-[11px] text-zinc-300 hover:border-emerald-500 hover:text-emerald-300"
+                      >
+                        {copied === `recent-${item.shortId}`
+                          ? "Copiado!"
+                          : "Copiar curl"}
+                      </button>
+                      <a
+                        href={item.rawUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="rounded border border-zinc-700 px-2 py-0.5 text-[11px] text-zinc-400 hover:border-emerald-500 hover:text-zinc-200"
+                      >
+                        .sh
+                      </a>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       </aside>
     </div>

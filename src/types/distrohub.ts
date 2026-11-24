@@ -118,6 +118,7 @@ export interface DistroHubDistro {
   recommendedPacks: Pack[];
   tagline: string;
   isoUrl: string;
+  iconUrl?: string;
   quizWeights: QuizWeights;
   createdAt?: string;
   updatedAt?: string;

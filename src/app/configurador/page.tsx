@@ -69,6 +69,7 @@ async function ConfiguratorLoader({
     distros.find((distro) => distro.slug === params.distro)?.slug ??
     distros[0]?.slug ??
     "";
+  const hasExplicitParams = Boolean(params.distro || params.pack);
 
   return (
     <PackConfigurator
@@ -76,6 +77,7 @@ async function ConfiguratorLoader({
       packages={packages}
       initialDistroSlug={initialDistroSlug}
       initialPack={initialPack}
+      hasExplicitParams={hasExplicitParams}
     />
   );
 }

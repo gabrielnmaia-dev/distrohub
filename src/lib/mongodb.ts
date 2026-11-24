@@ -1,11 +1,5 @@
 import mongoose from "mongoose";
 
-const MONGODB_URI = process.env.MONGODB_URI;
-
-if (!MONGODB_URI) {
-  throw new Error("Defina MONGODB_URI no .env.local");
-}
-
 interface MongooseCache {
   conn: typeof mongoose | null;
   promise: Promise<typeof mongoose> | null;
@@ -19,10 +13,18 @@ const cache: MongooseCache =
   global.mongooseCache ?? (global.mongooseCache = { conn: null, promise: null });
 
 export async function connectDB() {
+  const mongodbUri = process.env.MONGODB_URI?.trim();
+  if (!mongodbUri) {
+    throw new Error("Defina MONGODB_URI no .env.local");
+  }
+
   if (cache.conn) return cache.conn;
 
   if (!cache.promise) {
-    cache.promise = mongoose.connect(MONGODB_URI!, { bufferCommands: false });
+    cache.promise = mongoose.connect(mongodbUri, {
+      bufferCommands: false,
+      serverSelectionTimeoutMS: 3000,
+    });
   }
 
   try {

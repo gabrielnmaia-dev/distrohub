@@ -1,13 +1,15 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   packForAnswers,
   rankDistros,
   toQuizAnswers,
 } from "@/lib/quiz-engine";
+import { useDistroHubStore } from "@/store/useDistroHubStore";
 import {
   FAMILY_LABELS,
   PACK_LABELS,
@@ -119,11 +121,31 @@ export default function QuizWizard({ distros }: QuizWizardProps) {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [finished, setFinished] = useState(false);
 
+  const lastQuizAnswers = useDistroHubStore((s) => s.lastQuizAnswers);
+  const recommendedDistroSlug = useDistroHubStore(
+    (s) => s.recommendedDistroSlug
+  );
+  const setQuizResult = useDistroHubStore((s) => s.setQuizResult);
+
   const quizAnswers = useMemo(() => toQuizAnswers(answers), [answers]);
 
   const ranked = useMemo(
     () => (quizAnswers ? rankDistros(distros, quizAnswers) : []),
     [distros, quizAnswers]
+  );
+
+  useEffect(() => {
+    if (finished && quizAnswers && ranked.length > 0) {
+      setQuizResult(quizAnswers, ranked[0].distro.slug);
+    }
+  }, [finished, quizAnswers, ranked, setQuizResult]);
+
+  const savedWinner = useMemo(
+    () =>
+      recommendedDistroSlug
+        ? distros.find((d) => d.slug === recommendedDistroSlug) ?? null
+        : null,
+    [distros, recommendedDistroSlug]
   );
 
   const question = QUESTIONS[step];
@@ -160,12 +182,27 @@ export default function QuizWizard({ distros }: QuizWizardProps) {
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-400">
             Combinação {winner.percentage}%
           </p>
-          <h2 className="mt-2 text-3xl font-bold text-zinc-50">
-            {winner.distro.name}
-          </h2>
-          <p className="mt-2 max-w-2xl text-sm text-zinc-300">
-            {winner.distro.tagline}
-          </p>
+          <div className="mt-3 flex items-center gap-4">
+            {winner.distro.iconUrl ? (
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border border-emerald-700/40 bg-zinc-950/70 p-2.5">
+                <Image
+                  src={winner.distro.iconUrl}
+                  alt={`Ícone 3D do ${winner.distro.name}`}
+                  width={48}
+                  height={48}
+                  className="h-12 w-12 object-contain drop-shadow-md"
+                />
+              </div>
+            ) : null}
+            <div>
+              <h2 className="text-3xl font-bold text-zinc-50">
+                {winner.distro.name}
+              </h2>
+              <p className="mt-1 max-w-2xl text-sm text-zinc-300">
+                {winner.distro.tagline}
+              </p>
+            </div>
+          </div>
 
           <div className="mt-4 flex flex-wrap gap-2 text-xs">
             <span className="rounded-full bg-zinc-800 px-3 py-1 text-zinc-300">
@@ -218,9 +255,20 @@ export default function QuizWizard({ distros }: QuizWizardProps) {
                 className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4"
               >
                 <div className="flex items-center justify-between gap-2">
-                  <h4 className="font-semibold text-zinc-100">
-                    {item.distro.name}
-                  </h4>
+                  <div className="flex items-center gap-2.5">
+                    {item.distro.iconUrl ? (
+                      <Image
+                        src={item.distro.iconUrl}
+                        alt={`Ícone 3D do ${item.distro.name}`}
+                        width={28}
+                        height={28}
+                        className="h-7 w-7 shrink-0 object-contain"
+                      />
+                    ) : null}
+                    <h4 className="font-semibold text-zinc-100">
+                      {item.distro.name}
+                    </h4>
+                  </div>
                   <span className="text-xs text-zinc-500">
                     {item.percentage}%
                   </span>
@@ -259,7 +307,38 @@ export default function QuizWizard({ distros }: QuizWizardProps) {
   }
 
   return (
-    <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-6">
+    <div className="space-y-4">
+      {savedWinner && lastQuizAnswers && step === 0 && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-emerald-800/50 bg-emerald-500/5 px-4 py-3 text-xs">
+          <span className="text-zinc-300">
+            Última recomendação salva:{" "}
+            <strong className="text-emerald-400">{savedWinner.name}</strong>
+          </span>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                setAnswers({ ...lastQuizAnswers });
+                setFinished(true);
+              }}
+              className="font-medium text-emerald-400 hover:underline"
+            >
+              Ver resultado salvo
+            </button>
+            <Link
+              href={`/configurador?distro=${savedWinner.slug}&pack=${packForAnswers(
+                savedWinner,
+                lastQuizAnswers
+              )}`}
+              className="rounded border border-emerald-700/60 px-2.5 py-1 text-emerald-300 hover:bg-emerald-500/10"
+            >
+              Ir ao configurador →
+            </Link>
+          </div>
+        </div>
+      )}
+
+      <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-6">
       <div className="mb-6">
         <div className="flex items-center justify-between text-xs text-zinc-500">
           <span>
@@ -324,6 +403,7 @@ export default function QuizWizard({ distros }: QuizWizardProps) {
             Ver resultado agora →
           </button>
         )}
+      </div>
       </div>
     </div>
   );

@@ -52,6 +52,7 @@ const HubDistroSchema = new Schema<DistroHubDistro>(
     },
     tagline: { type: String, required: true, trim: true },
     isoUrl: { type: String, required: true, trim: true },
+    iconUrl: { type: String, default: "", trim: true },
     quizWeights: { type: QuizWeightsSchema, required: true },
   },
   { timestamps: true, collection: "distrohub_distros" }

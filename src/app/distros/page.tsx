@@ -1,7 +1,7 @@
 import Link from "next/link";
 import DistroCard from "@/components/DistroCard";
 import { getDistros } from "@/lib/distros";
-import { FOCOS } from "@/types";
+import { FOCOS, FOCO_LABELS, type Foco } from "@/types";
 
 type Props = { searchParams: Promise<{ foco?: string }> };
 
@@ -12,25 +12,36 @@ export default async function DistrosPage({ searchParams }: Props) {
   const { foco } = await searchParams;
   const distros = await getDistros(foco);
 
-  const baseChip = "rounded-full border px-4 py-1.5 text-sm";
-  const ativo = "border-emerald-500 text-emerald-400";
-  const inativo = "border-zinc-700 hover:border-emerald-500";
+  const baseChip = "rounded-full border px-4 py-1.5 text-sm transition";
+  const ativo = "border-emerald-500 bg-emerald-500/10 text-emerald-400";
+  const inativo =
+    "border-zinc-700 text-zinc-300 hover:border-emerald-500 hover:text-emerald-400";
 
   return (
     <main className="mx-auto max-w-5xl p-6">
-      <h1 className="mb-4 text-3xl font-bold">Distros</h1>
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-400">
+            Catálogo
+          </p>
+          <h1 className="mt-1 text-3xl font-bold">Distros por Foco</h1>
+        </div>
+        <span className="text-xs text-zinc-500">
+          {distros.length} distro(s) encontrada(s)
+        </span>
+      </div>
 
       <div className="mb-8 flex flex-wrap gap-2">
         <Link href="/distros" className={`${baseChip} ${!foco ? ativo : inativo}`}>
           Todas
         </Link>
-        {FOCOS.map((f) => (
+        {FOCOS.map((f: Foco) => (
           <Link
             key={f}
             href={`/distros?foco=${f}`}
             className={`${baseChip} ${foco === f ? ativo : inativo}`}
           >
-            {f}
+            {FOCO_LABELS[f]}
           </Link>
         ))}
       </div>

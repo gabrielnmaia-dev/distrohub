@@ -42,3 +42,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local source assets & docs
+/distro_icons
+/packs-programas-distrohub.pdf
+/public/distro-icons/3d/*.svg

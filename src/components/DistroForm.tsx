@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { FOCOS, type Foco } from "@/types";
+import { FOCOS, FOCO_LABELS, type Foco } from "@/types";
 
 const inicial = {
   nome: "",
@@ -111,7 +111,7 @@ export default function DistroForm() {
                 checked={foco.includes(f)}
                 onChange={() => toggleFoco(f)}
               />
-              {f}
+              {FOCO_LABELS[f]}
             </label>
           ))}
         </div>
