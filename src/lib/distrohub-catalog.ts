@@ -48,15 +48,38 @@ function everywhere(target: TargetSpec): PackageTargets {
 // Distros
 // ---------------------------------------------------------------------------
 
+export const DISTRO_3D_ICONS: Record<string, string> = {
+  "fedora-workstation": "/distro-icons/3d/fedora-3d.png",
+  "fedora-design": "/distro-icons/3d/fedora-3d.png",
+  "ubuntu-lts": "/distro-icons/3d/ubuntu-3d.png",
+  "ubuntu-studio": "/distro-icons/3d/ubuntu-3d.png",
+  "pop-os": "/distro-icons/3d/popos-3d.png",
+  "arch-linux": "/distro-icons/3d/icons8-arch-linux-24-3d.png",
+  endeavouros: "/distro-icons/3d/endeavouros-3d.png",
+  nobara: "/distro-icons/3d/nobaralinux-dark-3d.png",
+  bazzite: "/distro-icons/3d/bazzite-3d.png",
+  garuda: "/distro-icons/3d/garuda-linux-3d.png",
+  cachyos: "/distro-icons/3d/cachyos-linux-3d.png",
+  "linux-mint": "/distro-icons/3d/linux-mint-3d.png",
+};
+
+export function getDistroIconUrl(slug: string, customIconUrl?: string): string {
+  if (customIconUrl && customIconUrl.trim().length > 0) {
+    return customIconUrl.trim();
+  }
+  return DISTRO_3D_ICONS[slug] ?? "";
+}
+
 export const CATALOG_DISTROS: DistroHubDistro[] = [
   {
     slug: "fedora-workstation",
     name: "Fedora Workstation",
     family: "fedora",
-    recommendedPacks: ["dev", "creator"],
+    recommendedPacks: ["dev"],
     tagline:
       "Tecnologia de ponta com ciclo previsível: GNOME puro, Wayland maduro e toolchain sempre recente.",
     isoUrl: "https://fedoraproject.org/workstation/download",
+    iconUrl: "/distro-icons/3d/fedora-3d.png",
     quizWeights: {
       goalDev: 9,
       goalCreator: 7,
@@ -78,6 +101,7 @@ export const CATALOG_DISTROS: DistroHubDistro[] = [
     tagline:
       "O caminho mais previsível: 5 anos de suporte, compatibilidade ampla e documentação em todo lugar.",
     isoUrl: "https://ubuntu.com/download/desktop",
+    iconUrl: "/distro-icons/3d/ubuntu-3d.png",
     quizWeights: {
       goalDev: 8,
       goalCreator: 6,
@@ -99,6 +123,7 @@ export const CATALOG_DISTROS: DistroHubDistro[] = [
     tagline:
       "Ubuntu com polish de desktop: COSMIC, tiling por padrão e ISO com driver NVIDIA pronta.",
     isoUrl: "https://pop.system76.com/",
+    iconUrl: "/distro-icons/3d/popos-3d.png",
     quizWeights: {
       goalDev: 8,
       goalCreator: 7,
@@ -116,10 +141,11 @@ export const CATALOG_DISTROS: DistroHubDistro[] = [
     slug: "arch-linux",
     name: "Arch Linux",
     family: "arch",
-    recommendedPacks: ["dev", "gaming"],
+    recommendedPacks: ["dev"],
     tagline:
       "Você monta o sistema do zero e recebe em troca controle total e o AUR inteiro ao alcance.",
     isoUrl: "https://archlinux.org/download/",
+    iconUrl: "/distro-icons/3d/icons8-arch-linux-24-3d.png",
     quizWeights: {
       goalDev: 9,
       goalCreator: 7,
@@ -137,10 +163,11 @@ export const CATALOG_DISTROS: DistroHubDistro[] = [
     slug: "endeavouros",
     name: "EndeavourOS",
     family: "arch",
-    recommendedPacks: ["dev", "gaming"],
+    recommendedPacks: ["dev"],
     tagline:
       "Arch sem o ritual de instalação: base rolling release, instalador amigável e comunidade acolhedora.",
     isoUrl: "https://endeavouros.com/",
+    iconUrl: "/distro-icons/3d/endeavouros-3d.png",
     quizWeights: {
       goalDev: 8,
       goalCreator: 6,
@@ -162,6 +189,7 @@ export const CATALOG_DISTROS: DistroHubDistro[] = [
     tagline:
       "Ubuntu pré-configurado para áudio, vídeo e imagem: kernel de baixa latência e suíte criativa completa.",
     isoUrl: "https://ubuntustudio.org/download/",
+    iconUrl: "/distro-icons/3d/ubuntu-3d.png",
     quizWeights: {
       goalDev: 5,
       goalCreator: 10,
@@ -183,6 +211,7 @@ export const CATALOG_DISTROS: DistroHubDistro[] = [
     tagline:
       "Fedora lapidado para jogos e criação: codecs, drivers e patches de performance já embarcados.",
     isoUrl: "https://nobaraproject.org/download-nobara/",
+    iconUrl: "/distro-icons/3d/nobaralinux-dark-3d.png",
     quizWeights: {
       goalDev: 6,
       goalCreator: 8,
@@ -204,6 +233,7 @@ export const CATALOG_DISTROS: DistroHubDistro[] = [
     tagline:
       "Spin oficial do Fedora com o arsenal criativo do Fedora Design Team pronto para produzir.",
     isoUrl: "https://fedoraproject.org/spins/design-suite/download",
+    iconUrl: "/distro-icons/3d/fedora-3d.png",
     quizWeights: {
       goalDev: 5,
       goalCreator: 10,
@@ -225,6 +255,7 @@ export const CATALOG_DISTROS: DistroHubDistro[] = [
     tagline:
       "Imagem atômica imutável feita para jogar: Steam, HDR, handhelds e rollback com um comando.",
     isoUrl: "https://bazzite.gg/",
+    iconUrl: "/distro-icons/3d/bazzite-3d.png",
     quizWeights: {
       goalDev: 5,
       goalCreator: 5,
@@ -246,6 +277,7 @@ export const CATALOG_DISTROS: DistroHubDistro[] = [
     tagline:
       "Arch com visual agressivo, snapshots Btrfs automáticos e tweaks de performance para jogos.",
     isoUrl: "https://garudalinux.org/downloads",
+    iconUrl: "/distro-icons/3d/garuda-linux-3d.png",
     quizWeights: {
       goalDev: 6,
       goalCreator: 6,
@@ -263,10 +295,11 @@ export const CATALOG_DISTROS: DistroHubDistro[] = [
     slug: "cachyos",
     name: "CachyOS",
     family: "arch",
-    recommendedPacks: ["gaming", "dev"],
+    recommendedPacks: ["gaming"],
     tagline:
       "Arch otimizado com kernel próprio, pacotes compilados para x86-64-v3 e foco absoluto em latência.",
     isoUrl: "https://cachyos.org/download/",
+    iconUrl: "/distro-icons/3d/cachyos-linux-3d.png",
     quizWeights: {
       goalDev: 7,
       goalCreator: 5,
@@ -288,6 +321,7 @@ export const CATALOG_DISTROS: DistroHubDistro[] = [
     tagline:
       "A porta de entrada mais confortável: Cinnamon familiar, base Ubuntu LTS e zero surpresas.",
     isoUrl: "https://linuxmint.com/download.php",
+    iconUrl: "/distro-icons/3d/linux-mint-3d.png",
     quizWeights: {
       goalDev: 6,
       goalCreator: 5,

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import DistroCard from "@/components/DistroCard";
 import { getDistros } from "@/lib/distros";
-import { FOCOS } from "@/types";
+import { FOCOS, FOCO_LABELS, type Foco } from "@/types";
 
 // O catálogo vem do MongoDB em tempo de request; a rota pode bloquear.
 export const instant = false;
@@ -33,13 +33,13 @@ export default async function Home() {
       </section>
 
       <section className="mb-10 flex flex-wrap justify-center gap-2">
-        {FOCOS.map((f) => (
+        {FOCOS.map((f: Foco) => (
           <Link
             key={f}
             href={`/distros?foco=${f}`}
             className="rounded-full border border-zinc-700 px-4 py-1.5 text-sm hover:border-emerald-500 hover:text-emerald-400"
           >
-            {f}
+            {FOCO_LABELS[f]}
           </Link>
         ))}
       </section>
@@ -48,7 +48,7 @@ export default async function Home() {
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-xl font-semibold">Distros</h2>
           <Link href="/distros" className="text-sm text-emerald-400 hover:underline">
-            Ver todas
+            Ver todas ({distros.length})
           </Link>
         </div>
 

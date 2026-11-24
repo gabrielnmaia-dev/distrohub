@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -17,21 +18,37 @@ export default function CadastroPage() {
     setErro("");
     setCarregando(true);
 
+    const normalizedEmail = email.trim().toLowerCase();
+
     const res = await fetch("/api/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nome, email, senha }),
+      body: JSON.stringify({ nome: nome.trim(), email: normalizedEmail, senha }),
     });
 
-    setCarregando(false);
-
     if (!res.ok) {
-      const data = await res.json();
+      setCarregando(false);
+      const data = await res.json().catch(() => ({}));
       setErro(data.erro ?? "Erro ao cadastrar.");
       return;
     }
 
-    router.push("/login");
+    // Autentica automaticamente após criar a conta (seta o cookie HttpOnly)
+    const loginRes = await signIn("credentials", {
+      email: normalizedEmail,
+      senha,
+      redirect: false,
+    });
+
+    setCarregando(false);
+
+    if (loginRes?.error) {
+      router.push("/login");
+      return;
+    }
+
+    router.push("/");
+    router.refresh();
   }
 
   return (
@@ -43,24 +60,28 @@ export default function CadastroPage() {
         <h1 className="text-2xl font-bold">Criar conta</h1>
 
         <input
-          className="w-full rounded-md border border-zinc-700 bg-zinc-950 p-2"
+          className="w-full rounded-md border border-zinc-700 bg-zinc-950 p-2 outline-none focus:border-emerald-500"
           placeholder="Nome"
+          autoComplete="name"
           value={nome}
           onChange={(e) => setNome(e.target.value)}
           required
         />
         <input
-          className="w-full rounded-md border border-zinc-700 bg-zinc-950 p-2"
+          className="w-full rounded-md border border-zinc-700 bg-zinc-950 p-2 outline-none focus:border-emerald-500"
           type="email"
           placeholder="Email"
+          autoComplete="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
         />
         <input
-          className="w-full rounded-md border border-zinc-700 bg-zinc-950 p-2"
+          className="w-full rounded-md border border-zinc-700 bg-zinc-950 p-2 outline-none focus:border-emerald-500"
           type="password"
           placeholder="Senha (mínimo 6 caracteres)"
+          autoComplete="new-password"
+          minLength={6}
           value={senha}
           onChange={(e) => setSenha(e.target.value)}
           required
@@ -71,7 +92,7 @@ export default function CadastroPage() {
         <button
           type="submit"
           disabled={carregando}
-          className="w-full rounded-md bg-emerald-600 p-2 font-medium hover:bg-emerald-500 disabled:opacity-50"
+          className="w-full rounded-md bg-emerald-600 p-2 font-medium text-zinc-950 hover:bg-emerald-500 disabled:opacity-50"
         >
           {carregando ? "Criando..." : "Cadastrar"}
         </button>

@@ -1,12 +1,20 @@
-export const FOCOS = [
-  "dev",
-  "jogos",
-  "produtividade",
-  "iniciantes",
-  "servidor",
-] as const;
+export const FOCOS = ["dev", "criadores", "jogos", "iniciantes"] as const;
 
 export type Foco = (typeof FOCOS)[number];
+
+export const FOCO_LABELS: Record<Foco, string> = {
+  dev: "Desenvolvedores",
+  criadores: "Criadores & Edição",
+  jogos: "Jogos",
+  iniciantes: "Iniciantes",
+};
+
+export const FOCO_PACK_MAP: Record<Foco, "dev" | "creator" | "gaming"> = {
+  dev: "dev",
+  criadores: "creator",
+  jogos: "gaming",
+  iniciantes: "gaming",
+};
 
 export type Role = "user" | "admin";
 

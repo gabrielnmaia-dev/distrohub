@@ -4,6 +4,7 @@ import SoftwarePackageModel from "@/models/SoftwarePackage";
 import {
   CATALOG_DISTROS,
   CATALOG_PACKAGES,
+  getDistroIconUrl,
 } from "@/lib/distrohub-catalog";
 import type {
   DistroHubDistro,
@@ -30,6 +31,7 @@ function toDistro(doc: LeanDistro): DistroHubDistro {
     recommendedPacks: [...doc.recommendedPacks],
     tagline: doc.tagline,
     isoUrl: doc.isoUrl,
+    iconUrl: getDistroIconUrl(doc.slug, doc.iconUrl),
     quizWeights: { ...doc.quizWeights },
   };
 }
@@ -65,14 +67,28 @@ function sortPackages(packages: SoftwarePackage[]): SoftwarePackage[] {
   return [...packages].sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
 }
 
+export interface MemoryPreset {
+  shortId: string;
+  distroSlug: string;
+  selectedPackageSlugs: string[];
+  downloadsCount: number;
+  createdAt: string;
+}
+
+declare global {
+  var memoryPresetsCache: Map<string, MemoryPreset> | undefined;
+}
+
+export const memoryPresets: Map<string, MemoryPreset> =
+  global.memoryPresetsCache ?? (global.memoryPresetsCache = new Map());
+
 export async function getQuizDistros(): Promise<DistroHubDistro[]> {
   try {
     await connectDB();
     const docs = (await HubDistro.find({}).lean()) as unknown as LeanDistro[];
     if (docs.length === 0) return sortDistros(CATALOG_DISTROS);
     return sortDistros(docs.map(toDistro));
-  } catch (error) {
-    console.warn("[distrohub] catálogo de distros indisponível, usando fallback", error);
+  } catch {
     return sortDistros(CATALOG_DISTROS);
   }
 }
@@ -83,8 +99,7 @@ export async function getCatalogPackages(): Promise<SoftwarePackage[]> {
     const docs = (await SoftwarePackageModel.find({}).lean()) as unknown as LeanPackage[];
     if (docs.length === 0) return sortPackages(CATALOG_PACKAGES);
     return sortPackages(docs.map(toPackage));
-  } catch (error) {
-    console.warn("[distrohub] catálogo de pacotes indisponível, usando fallback", error);
+  } catch {
     return sortPackages(CATALOG_PACKAGES);
   }
 }
