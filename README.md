@@ -108,3 +108,8 @@ curl -X POST http://localhost:3000/api/presets \
 
 O catálogo canônico fica em `src/lib/distrohub-catalog.ts` e é aplicado pelo seed
 (`npm run seed`), que faz `upsert` por `slug` — rodar várias vezes não duplica nada.
+
+> As leituras de MongoDB das páginas usam `io()` de `next/cache`: elas ficam fora do
+> prerender (o Mongoose chama `new Date()` nas queries), então o `next build` funciona
+> no free tier da Vercel sem precisar de cache persistente ou ISR pago. Se o banco
+> estiver indisponível, as páginas caem para o catálogo estático em tempo de request.
