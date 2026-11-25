@@ -86,6 +86,10 @@ Função pura e isomórfica (`compileScript({ distro, packages })`) que gera um 
 | `POST` | `/api/presets`          | Salva `{ distroSlug, selectedPackageSlugs }` e devolve `shortId`, `rawUrl` e `curlCommand` |
 | `GET`  | `/api/script/[shortId]` | Compila o preset, incrementa `downloadsCount` e devolve o `.sh` como `text/x-shellscript` |
 
+Todas as rotas `/api/*` são servidas por um único catch-all
+(`src/app/api/[[...segments]]/route.ts`) que despacha em `src/lib/api-dispatch.ts`.
+As URLs públicas não mudaram; isso reduz o número de Functions no free tier da Vercel.
+
 Exemplo:
 
 ```bash
