@@ -28,6 +28,29 @@ Variáveis de ambiente:
 | `NEXTAUTH_URL`        | URL base do NextAuth                                       |
 | `NEXT_PUBLIC_SITE_URL`| Base dos links `curl \| bash` (default: origem da request) |
 
+### Deploy na Vercel (free tier)
+
+`.env.local` não vai para o deploy: configure as variáveis em **Settings →
+Environment Variables** do projeto (ou com `vercel env add`). Depois de mudar
+qualquer variável, faça **Redeploy** — variáveis novas não valem para deployments
+antigos.
+
+```bash
+openssl rand -base64 32                         # gere um valor para NEXTAUTH_SECRET
+vercel env add NEXTAUTH_SECRET production
+vercel env add NEXTAUTH_URL production          # https://<projeto>.vercel.app
+vercel env add NEXT_PUBLIC_SITE_URL production  # mesma URL pública
+```
+
+`NEXTAUTH_SECRET` (ou `AUTH_SECRET`) é **obrigatório em produção**: sem ele o
+NextAuth devolve `500` em `/api/auth/session` com `There is a problem with the
+server configuration`. Para conferir rapidamente:
+
+```bash
+curl https://<projeto>.vercel.app/api/health
+# => {"status":"ok","db":"conectado","auth":{"secretConfigured":true,"urlConfigured":true}}
+```
+
 ## Funcionalidades
 
 ### Quiz (`/quiz`)

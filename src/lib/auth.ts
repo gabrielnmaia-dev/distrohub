@@ -8,11 +8,17 @@ const useSecureCookies = process.env.NODE_ENV === "production";
 const cookiePrefix = useSecureCookies ? "__Secure-" : "";
 const hostPrefix = useSecureCookies ? "__Host-" : "";
 
+// `AUTH_SECRET` é o nome usado pelo Auth.js/Vercel; aceitar os dois evita
+// quebrar o login quando apenas a variável nova foi configurada.
+const resolvedSecret =
+  process.env.NEXTAUTH_SECRET?.trim() || process.env.AUTH_SECRET?.trim();
+
+export const isAuthConfigured = Boolean(resolvedSecret);
 export const SESSION_COOKIE_NAME = `${cookiePrefix}distrohub.session-token`;
 export const SESSION_MAX_AGE = 60 * 60 * 24 * 7; // 7 dias
 
 export const authOptions: NextAuthOptions = {
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: resolvedSecret,
   useSecureCookies,
   session: {
     strategy: "jwt",

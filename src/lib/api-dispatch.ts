@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import NextAuth from "next-auth";
 import { isValidObjectId } from "mongoose";
 import bcrypt from "bcryptjs";
-import { authOptions } from "@/lib/auth";
+import { authOptions, isAuthConfigured } from "@/lib/auth";
 import { CATALOG_DISTROS, CATALOG_PACKAGES } from "@/lib/distrohub-catalog";
 import { memoryPresets } from "@/lib/distrohub-data";
 import { connectDB } from "@/lib/mongodb";
@@ -82,13 +82,24 @@ function parsePresetRequest(value: unknown): PresetRequest | null {
 }
 
 async function health(): Promise<Response> {
+  // Expor apenas flags (nunca o valor do secret) ajuda a diagnosticar o
+  // `CLIENT_FETCH_ERROR` do NextAuth em produção sem acessar os logs da Vercel.
+  const auth = {
+    secretConfigured: isAuthConfigured,
+    urlConfigured: Boolean(process.env.NEXTAUTH_URL?.trim()),
+  };
+
   try {
     await connectDB();
-    return NextResponse.json({ status: "ok", db: "conectado" });
+    return NextResponse.json({
+      status: "ok",
+      db: "conectado",
+      auth,
+    });
   } catch (error) {
     console.error("Health check failed:", error);
     return NextResponse.json(
-      { status: "error", db: "falhou" },
+      { status: "error", db: "falhou", auth },
       { status: 500 }
     );
   }
