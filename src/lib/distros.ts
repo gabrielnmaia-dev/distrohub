@@ -1,3 +1,4 @@
+import { io } from "next/cache";
 import { CATALOG_DISTROS, getDistroIconUrl } from "@/lib/distrohub-catalog";
 import { connectDB } from "@/lib/mongodb";
 import Distro from "@/models/Distro";
@@ -71,6 +72,9 @@ function getFallbackDistros(foco?: string): DistroType[] {
 }
 
 export async function getDistros(foco?: string): Promise<DistroType[]> {
+  // MongoDB só deve ser lido em tempo de request (ver comentário em
+  // `distrohub-data.ts`); `io()` evita que a query entre no prerender.
+  await io();
   const targetFoco = foco ? normalizeFoco(foco) : null;
 
   try {
@@ -100,6 +104,7 @@ export async function getDistros(foco?: string): Promise<DistroType[]> {
 }
 
 export async function getDistroBySlug(slug: string): Promise<DistroType | null> {
+  await io();
   try {
     await connectDB();
     const distro = await Distro.findOne({ slug }).lean();

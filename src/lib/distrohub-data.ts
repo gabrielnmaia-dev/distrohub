@@ -1,3 +1,4 @@
+import { io } from "next/cache";
 import { connectDB } from "@/lib/mongodb";
 import HubDistro from "@/models/HubDistro";
 import SoftwarePackageModel from "@/models/SoftwarePackage";
@@ -83,6 +84,10 @@ export const memoryPresets: Map<string, MemoryPreset> =
   global.memoryPresetsCache ?? (global.memoryPresetsCache = new Map());
 
 export async function getQuizDistros(): Promise<DistroHubDistro[]> {
+  // O Mongoose usa `new Date()` internamente nas queries. Fora do request isso
+  // quebra o prerender com Cache Components; `io()` mantém a leitura fora do
+  // shell estático (funciona também no free tier da Vercel).
+  await io();
   try {
     await connectDB();
     const docs = (await HubDistro.find({}).lean()) as unknown as LeanDistro[];
@@ -94,6 +99,7 @@ export async function getQuizDistros(): Promise<DistroHubDistro[]> {
 }
 
 export async function getCatalogPackages(): Promise<SoftwarePackage[]> {
+  await io();
   try {
     await connectDB();
     const docs = (await SoftwarePackageModel.find({}).lean()) as unknown as LeanPackage[];

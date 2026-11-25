@@ -7,7 +7,11 @@ import {
 import HubDistro from "@/models/HubDistro";
 import ScriptPreset from "@/models/ScriptPreset";
 import SoftwarePackageModel from "@/models/SoftwarePackage";
-import type { DistroHubDistro, SoftwarePackage } from "@/types/distrohub";
+import {
+  QUIZ_WEIGHT_KEYS,
+  type DistroHubDistro,
+  type SoftwarePackage,
+} from "@/types/distrohub";
 
 /**
  * Seed idempotente do catálogo DistroHub.
@@ -108,6 +112,15 @@ function assertCatalogIntegrity(): void {
     for (const pack of distro.recommendedPacks) {
       if (!recommended.has(pack)) {
         throw new Error(`Distro ${distro.slug} recomenda pack inválido: ${pack}`);
+      }
+    }
+
+    for (const key of QUIZ_WEIGHT_KEYS) {
+      const value = distro.quizWeights[key];
+      if (!Number.isFinite(value) || value < 0 || value > 10) {
+        throw new Error(
+          `Distro ${distro.slug} com peso inválido em ${key}: ${value}`
+        );
       }
     }
   }
