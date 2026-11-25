@@ -66,6 +66,22 @@ export interface QuizWeights {
   updatesRolling: number;
   expBeginner: number;
   expAdvanced: number;
+  desktopGnome: number;
+  desktopKde: number;
+  desktopTiling: number;
+  desktopClassic: number;
+  hardwareLight: number;
+  hardwareBalanced: number;
+  hardwarePowerful: number;
+  deviceDesktop: number;
+  deviceLaptop: number;
+  deviceHandheld: number;
+  systemImmutable: number;
+  systemSnapshots: number;
+  systemTraditional: number;
+  packageAur: number;
+  packageFlatpak: number;
+  packageOfficial: number;
 }
 
 export const QUIZ_WEIGHT_KEYS = [
@@ -79,6 +95,22 @@ export const QUIZ_WEIGHT_KEYS = [
   "updatesRolling",
   "expBeginner",
   "expAdvanced",
+  "desktopGnome",
+  "desktopKde",
+  "desktopTiling",
+  "desktopClassic",
+  "hardwareLight",
+  "hardwareBalanced",
+  "hardwarePowerful",
+  "deviceDesktop",
+  "deviceLaptop",
+  "deviceHandheld",
+  "systemImmutable",
+  "systemSnapshots",
+  "systemTraditional",
+  "packageAur",
+  "packageFlatpak",
+  "packageOfficial",
 ] as const satisfies readonly (keyof QuizWeights)[];
 
 export const QUIZ_GOALS = ["dev", "creator", "gaming"] as const;
@@ -93,12 +125,47 @@ export type QuizUpdates = (typeof QUIZ_UPDATE_STYLES)[number];
 export const QUIZ_EXPERIENCES = ["beginner", "advanced"] as const;
 export type QuizExperience = (typeof QUIZ_EXPERIENCES)[number];
 
+export const QUIZ_DESKTOPS = ["gnome", "kde", "tiling", "classic"] as const;
+export type QuizDesktop = (typeof QUIZ_DESKTOPS)[number];
+
+export const QUIZ_HARDWARE_PROFILES = [
+  "light",
+  "balanced",
+  "powerful",
+] as const;
+export type QuizHardware = (typeof QUIZ_HARDWARE_PROFILES)[number];
+
+export const QUIZ_DEVICES = ["desktop", "laptop", "handheld"] as const;
+export type QuizDevice = (typeof QUIZ_DEVICES)[number];
+
+export const QUIZ_SYSTEM_STYLES = [
+  "immutable",
+  "snapshots",
+  "traditional",
+] as const;
+export type QuizSystem = (typeof QUIZ_SYSTEM_STYLES)[number];
+
+export const QUIZ_PACKAGE_STYLES = ["aur", "flatpak", "official"] as const;
+export type QuizPackageStyle = (typeof QUIZ_PACKAGE_STYLES)[number];
+
+/**
+ * As quatro primeiras respostas são obrigatórias. As novas perguntas são
+ * opcionais no tipo para que respostas salvas antes delas continuem válidas;
+ * o motor pontua apenas os critérios realmente respondidos.
+ */
 export interface QuizAnswers {
   goal: QuizGoal;
   gpu: QuizGpu;
   updates: QuizUpdates;
   experience: QuizExperience;
+  desktop?: QuizDesktop;
+  hardware?: QuizHardware;
+  device?: QuizDevice;
+  system?: QuizSystem;
+  packageStyle?: QuizPackageStyle;
 }
+
+export type QuizQuestionId = keyof QuizAnswers;
 
 export interface TargetSpec {
   method: InstallMethod;

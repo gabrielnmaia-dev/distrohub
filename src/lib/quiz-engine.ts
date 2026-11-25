@@ -1,21 +1,31 @@
 import {
+  QUIZ_DESKTOPS,
+  QUIZ_DEVICES,
   QUIZ_EXPERIENCES,
   QUIZ_GOALS,
   QUIZ_GPUS,
+  QUIZ_HARDWARE_PROFILES,
+  QUIZ_PACKAGE_STYLES,
+  QUIZ_SYSTEM_STYLES,
   QUIZ_UPDATE_STYLES,
   type DistroHubDistro,
   type Pack,
   type QuizAnswers,
+  type QuizDesktop,
+  type QuizDevice,
   type QuizExperience,
   type QuizGoal,
   type QuizGpu,
+  type QuizHardware,
+  type QuizPackageStyle,
+  type QuizSystem,
   type QuizUpdates,
+  type QuizWeights,
   type RankedDistro,
 } from "@/types/distrohub";
 
 /** Cada resposta vale no máximo 10 pontos. */
 const MAX_POINTS_PER_ANSWER = 10;
-const MAX_SCORE = MAX_POINTS_PER_ANSWER * 4;
 
 function oneOf<T extends string>(
   values: readonly T[],
@@ -45,14 +55,57 @@ export function isQuizExperience(
   return oneOf(QUIZ_EXPERIENCES, value);
 }
 
+export function isQuizDesktop(
+  value: string | null | undefined
+): value is QuizDesktop {
+  return oneOf(QUIZ_DESKTOPS, value);
+}
+
+export function isQuizHardware(
+  value: string | null | undefined
+): value is QuizHardware {
+  return oneOf(QUIZ_HARDWARE_PROFILES, value);
+}
+
+export function isQuizDevice(
+  value: string | null | undefined
+): value is QuizDevice {
+  return oneOf(QUIZ_DEVICES, value);
+}
+
+export function isQuizSystem(
+  value: string | null | undefined
+): value is QuizSystem {
+  return oneOf(QUIZ_SYSTEM_STYLES, value);
+}
+
+export function isQuizPackageStyle(
+  value: string | null | undefined
+): value is QuizPackageStyle {
+  return oneOf(QUIZ_PACKAGE_STYLES, value);
+}
+
 /**
  * Converte respostas parciais (string) em `QuizAnswers` validadas.
- * Retorna `null` enquanto o quiz não estiver completo.
+ * Retorna `null` enquanto as quatro perguntas obrigatórias não foram respondidas.
+ *
+ * As perguntas extras são opcionais: respostas salvas antes delas continuam
+ * sendo aceitas e apenas os critérios presentes entram na pontuação.
  */
 export function toQuizAnswers(
   answers: Readonly<Record<string, string | undefined>>
 ): QuizAnswers | null {
-  const { goal, gpu, updates, experience } = answers;
+  const {
+    goal,
+    gpu,
+    updates,
+    experience,
+    desktop,
+    hardware,
+    device,
+    system,
+    packageStyle,
+  } = answers;
   if (
     !isQuizGoal(goal) ||
     !isQuizGpu(gpu) ||
@@ -61,38 +114,118 @@ export function toQuizAnswers(
   ) {
     return null;
   }
-  return { goal, gpu, updates, experience };
+
+  const result: QuizAnswers = { goal, gpu, updates, experience };
+  if (isQuizDesktop(desktop)) result.desktop = desktop;
+  if (isQuizHardware(hardware)) result.hardware = hardware;
+  if (isQuizDevice(device)) result.device = device;
+  if (isQuizSystem(system)) result.system = system;
+  if (isQuizPackageStyle(packageStyle)) result.packageStyle = packageStyle;
+  return result;
+}
+
+type WeightMap = Readonly<Record<string, keyof QuizWeights>>;
+
+const GOAL_WEIGHTS: Readonly<Record<QuizGoal, keyof QuizWeights>> = {
+  dev: "goalDev",
+  creator: "goalCreator",
+  gaming: "goalGaming",
+};
+
+const GPU_WEIGHTS: Readonly<Record<QuizGpu, keyof QuizWeights>> = {
+  nvidia: "gpuNvidia",
+  "amd-intel": "gpuAmdIntel",
+};
+
+const UPDATES_WEIGHTS: Readonly<Record<QuizUpdates, keyof QuizWeights>> = {
+  stable: "updatesStable",
+  balanced: "updatesBalanced",
+  rolling: "updatesRolling",
+};
+
+const EXPERIENCE_WEIGHTS: Readonly<Record<QuizExperience, keyof QuizWeights>> = {
+  beginner: "expBeginner",
+  advanced: "expAdvanced",
+};
+
+const DESKTOP_WEIGHTS: Readonly<Record<QuizDesktop, keyof QuizWeights>> = {
+  gnome: "desktopGnome",
+  kde: "desktopKde",
+  tiling: "desktopTiling",
+  classic: "desktopClassic",
+};
+
+const HARDWARE_WEIGHTS: Readonly<Record<QuizHardware, keyof QuizWeights>> = {
+  light: "hardwareLight",
+  balanced: "hardwareBalanced",
+  powerful: "hardwarePowerful",
+};
+
+const DEVICE_WEIGHTS: Readonly<Record<QuizDevice, keyof QuizWeights>> = {
+  desktop: "deviceDesktop",
+  laptop: "deviceLaptop",
+  handheld: "deviceHandheld",
+};
+
+const SYSTEM_WEIGHTS: Readonly<Record<QuizSystem, keyof QuizWeights>> = {
+  immutable: "systemImmutable",
+  snapshots: "systemSnapshots",
+  traditional: "systemTraditional",
+};
+
+const PACKAGE_WEIGHTS: Readonly<Record<QuizPackageStyle, keyof QuizWeights>> = {
+  aur: "packageAur",
+  flatpak: "packageFlatpak",
+  official: "packageOfficial",
+};
+
+/** Cada critério respondido contribui com no máximo 10 pontos. */
+function answerRules(
+  answers: QuizAnswers
+): ReadonlyArray<readonly [string | undefined, WeightMap]> {
+  return [
+    [answers.goal, GOAL_WEIGHTS],
+    [answers.gpu, GPU_WEIGHTS],
+    [answers.updates, UPDATES_WEIGHTS],
+    [answers.experience, EXPERIENCE_WEIGHTS],
+    [answers.desktop, DESKTOP_WEIGHTS],
+    [answers.hardware, HARDWARE_WEIGHTS],
+    [answers.device, DEVICE_WEIGHTS],
+    [answers.system, SYSTEM_WEIGHTS],
+    [answers.packageStyle, PACKAGE_WEIGHTS],
+  ];
+}
+
+/**
+ * Ignora pesos ausentes (documentos antigos no Mongo ainda não re-seedados)
+ * para não penalizar uma distro por uma pergunta que ela não pode pontuar.
+ */
+function evaluate(
+  distro: DistroHubDistro,
+  answers: QuizAnswers
+): { score: number; max: number } {
+  let score = 0;
+  let max = 0;
+
+  for (const [answer, weightMap] of answerRules(answers)) {
+    if (!answer) continue;
+    const key = weightMap[answer];
+    if (!key) continue;
+    const weight = distro.quizWeights[key];
+    if (typeof weight !== "number" || !Number.isFinite(weight)) continue;
+
+    score += Math.min(MAX_POINTS_PER_ANSWER, Math.max(0, weight));
+    max += MAX_POINTS_PER_ANSWER;
+  }
+
+  return { score, max };
 }
 
 export function scoreDistro(
   distro: DistroHubDistro,
   answers: QuizAnswers
 ): number {
-  const weights = distro.quizWeights;
-
-  const goalScore =
-    answers.goal === "dev"
-      ? weights.goalDev
-      : answers.goal === "creator"
-        ? weights.goalCreator
-        : weights.goalGaming;
-
-  const gpuScore =
-    answers.gpu === "nvidia" ? weights.gpuNvidia : weights.gpuAmdIntel;
-
-  const updatesScore =
-    answers.updates === "stable"
-      ? weights.updatesStable
-      : answers.updates === "balanced"
-        ? weights.updatesBalanced
-        : weights.updatesRolling;
-
-  const experienceScore =
-    answers.experience === "beginner"
-      ? weights.expBeginner
-      : weights.expAdvanced;
-
-  return goalScore + gpuScore + updatesScore + experienceScore;
+  return evaluate(distro, answers).score;
 }
 
 export function rankDistros(
@@ -101,11 +234,12 @@ export function rankDistros(
 ): RankedDistro[] {
   return distros
     .map((distro) => {
-      const score = scoreDistro(distro, answers);
+      const { score, max } = evaluate(distro, answers);
       return {
         distro,
         score,
-        percentage: Math.round((score / MAX_SCORE) * 100),
+        percentage:
+          max > 0 ? Math.round((score / max) * 100) : 0,
       };
     })
     .sort((a, b) => {

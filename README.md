@@ -32,11 +32,26 @@ Variáveis de ambiente:
 
 ### Quiz (`/quiz`)
 
-Quatro perguntas (objetivo, GPU, estilo de atualização, experiência) pontuam cada distro
-com os pesos de `quizWeights`. O resultado mostra a vencedora, o percentual de aderência,
-duas alternativas e um CTA que abre o configurador já com distro + pack recomendado.
+Nove perguntas pontuam cada distro com os pesos de `quizWeights`:
 
-Motor puro em `src/lib/quiz-engine.ts` (sem dependências de servidor).
+1. objetivo (dev / creator / gaming);
+2. GPU (NVIDIA / AMD-Intel);
+3. estilo de atualização (stable / balanced / rolling);
+4. experiência com Linux;
+5. interface preferida (GNOME / KDE / tiling / clássica);
+6. perfil de hardware (modesto / intermediário / potente);
+7. dispositivo (desktop / notebook / handheld);
+8. modelo do sistema (imutável / snapshots / tradicional);
+9. forma de instalar apps (AUR / Flatpak / repositórios oficiais).
+
+O resultado mostra a vencedora, o percentual de aderência, duas alternativas e um CTA
+que abre o configurador já com distro + pack recomendado. As perguntas ficam em
+`src/lib/quiz-questions.ts`; as respostas extras são opcionais no tipo para não
+invalidar resultados salvos em versões anteriores — apenas critérios respondidos
+entram na pontuação e no denominador do percentual.
+
+Motor puro em `src/lib/quiz-engine.ts` (sem dependências de servidor). Ao atualizar
+os pesos do catálogo, rode `npm run seed` para replicá-los no MongoDB.
 
 ### Configurador (`/configurador`)
 

@@ -2,11 +2,11 @@ import Link from "next/link";
 import { Suspense } from "react";
 import QuizWizard from "@/components/quiz/QuizWizard";
 import { getQuizDistros } from "@/lib/distrohub-data";
+import { QUIZ_QUESTIONS } from "@/lib/quiz-questions";
 
 export const metadata = {
   title: "Quiz de distros — DistroHub",
-  description:
-    "Responda 4 perguntas e descubra qual distro Linux combina com o seu objetivo, GPU e nível de experiência.",
+  description: `Responda ${QUIZ_QUESTIONS.length} perguntas e descubra qual distro Linux combina com seu objetivo, hardware, interface e jeito de trabalhar.`,
 };
 
 export default function QuizPage() {
@@ -20,7 +20,8 @@ export default function QuizPage() {
           Qual distro combina com você?
         </h1>
         <p className="mt-2 max-w-2xl text-sm text-zinc-400">
-          Quatro perguntas rápidas. No final você recebe a distro vencedora, duas
+          {QUIZ_QUESTIONS.length} perguntas rápidas sobre seu uso, hardware e
+          preferências. No final você recebe a distro vencedora, duas
           alternativas e pode montar um script de instalação sob medida.
         </p>
         <Link

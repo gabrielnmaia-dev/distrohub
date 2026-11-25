@@ -9,6 +9,7 @@ import {
   rankDistros,
   toQuizAnswers,
 } from "@/lib/quiz-engine";
+import { QUIZ_QUESTIONS } from "@/lib/quiz-questions";
 import { useDistroHubStore } from "@/store/useDistroHubStore";
 import {
   FAMILY_LABELS,
@@ -16,100 +17,6 @@ import {
   type DistroHubDistro,
   type QuizAnswers,
 } from "@/types/distrohub";
-
-interface QuizOption {
-  value: string;
-  label: string;
-  description: string;
-}
-
-interface QuizQuestion {
-  id: keyof QuizAnswers;
-  title: string;
-  hint: string;
-  options: QuizOption[];
-}
-
-const QUESTIONS: QuizQuestion[] = [
-  {
-    id: "goal",
-    title: "Qual é o seu objetivo principal?",
-    hint: "O que vai ocupar a maior parte do seu tempo na máquina.",
-    options: [
-      {
-        value: "dev",
-        label: "Desenvolvimento & IA",
-        description: "IDEs, containers, agentes de IA e bancos de dados.",
-      },
-      {
-        value: "creator",
-        label: "Criação & Edição de Mídia",
-        description: "Foto, vídeo, design, áudio e motion graphics.",
-      },
-      {
-        value: "gaming",
-        label: "Jogos & Performance",
-        description: "Steam, Proton, HUDs e máximo FPS por watt.",
-      },
-    ],
-  },
-  {
-    id: "gpu",
-    title: "Qual placa de vídeo você usa?",
-    hint: "Ajuda a escolher quem entrega drivers e codecs sem dor de cabeça.",
-    options: [
-      {
-        value: "nvidia",
-        label: "NVIDIA",
-        description: "Drivers proprietários, CUDA e Wayland recente.",
-      },
-      {
-        value: "amd-intel",
-        label: "AMD ou Intel (integrada)",
-        description: "Drivers no kernel, Mesa e VA-API — plug and play.",
-      },
-    ],
-  },
-  {
-    id: "updates",
-    title: "Qual estilo de atualização você prefere?",
-    hint: "Isso define o quão perto do bleeding edge você quer viver.",
-    options: [
-      {
-        value: "stable",
-        label: "Estabilidade máxima",
-        description: "Tudo testado, nada quebra, atualizações previsíveis.",
-      },
-      {
-        value: "balanced",
-        label: "Equilibrado",
-        description: "Tecnologia recente com um ciclo de testes sério.",
-      },
-      {
-        value: "rolling",
-        label: "Rolling release",
-        description: "Sempre na última versão, atualizando todo dia.",
-      },
-    ],
-  },
-  {
-    id: "experience",
-    title: "Qual seu nível com Linux?",
-    hint: "Sem julgamento — só para calibrar a curva de aprendizado.",
-    options: [
-      {
-        value: "beginner",
-        label: "Iniciante vindo do Windows",
-        description: "Quero instalar e usar, com tudo pronto.",
-      },
-      {
-        value: "advanced",
-        label: "Intermediário / Avançado",
-        description: "Gosto de configurar, scriptar e entender o sistema.",
-      },
-    ],
-  },
-];
 
 interface QuizWizardProps {
   distros: DistroHubDistro[];
@@ -148,15 +55,15 @@ export default function QuizWizard({ distros }: QuizWizardProps) {
     [distros, recommendedDistroSlug]
   );
 
-  const question = QUESTIONS[step];
+  const question = QUIZ_QUESTIONS[step];
   const progress = finished
     ? 100
-    : Math.round(((step + 1) / QUESTIONS.length) * 100);
+    : Math.round(((step + 1) / QUIZ_QUESTIONS.length) * 100);
 
   function choose(questionId: keyof QuizAnswers, value: string) {
     setAnswers((prev) => ({ ...prev, [questionId]: value }));
 
-    if (step < QUESTIONS.length - 1) {
+    if (step < QUIZ_QUESTIONS.length - 1) {
       setStep(step + 1);
       return;
     }
@@ -342,7 +249,7 @@ export default function QuizWizard({ distros }: QuizWizardProps) {
       <div className="mb-6">
         <div className="flex items-center justify-between text-xs text-zinc-500">
           <span>
-            Pergunta {step + 1} de {QUESTIONS.length}
+            Pergunta {step + 1} de {QUIZ_QUESTIONS.length}
           </span>
           <span>{progress}%</span>
         </div>
