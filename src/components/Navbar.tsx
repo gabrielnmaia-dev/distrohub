@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
 
@@ -9,7 +10,18 @@ export default function Navbar() {
   return (
     <header className="border-b border-zinc-800">
       <nav className="mx-auto flex max-w-5xl items-center justify-between p-4">
-        <Link href="/" className="text-xl font-bold text-emerald-400">
+        <Link
+          href="/"
+          className="flex items-center gap-2 text-xl font-bold text-emerald-400"
+        >
+          <Image
+            src="/logo.png"
+            alt=""
+            width={32}
+            height={32}
+            className="h-8 w-8 object-contain"
+            priority
+          />
           DistroHub
         </Link>
 

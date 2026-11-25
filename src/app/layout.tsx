@@ -6,6 +6,7 @@ import Navbar from "@/components/Navbar";
 export const metadata: Metadata = {
   title: "DistroHub",
   description: "Distros Linux por foco, com scripts de setup prontos.",
+  icons: { icon: "/logo.png" },
 };
 
 export default function RootLayout({
